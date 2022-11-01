@@ -13,11 +13,30 @@ struct Token {
     enum Type : int;
 
     Type type = {};
+
+    bool operator==(Type t) const {
+        return t == type;
+    }
+
+    void expect(Type t) const;
 };
 
+Token::Type tokenType(std::string_view str);
+
 enum Token::Type : int {
+    BeginParen = '(',
+    EndParen = ')',
+    BeginBrace = '{',
+    EndBrace = '}',
+    BeginBracket = '[',
+    EndBracket = ']',
+    Semicolon = ';',
+
     Eof = 0,
-    Word,
+
+    Word = 256,
     Keyword,
     Operator,
+
+    Module,
 };

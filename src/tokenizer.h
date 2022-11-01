@@ -23,14 +23,13 @@ struct Tokenizer {
         return _peek;
     }
 
-    void next() {
+    const Token &next() {
         _token = std::move(_peek);
 
         try {
             auto peek = Token{};
 
-            for (char c; c = ch(), isGood() && std::isspace(c); stepChar()) {
-            }
+            skipSpace();
 
             peek.file = _file;
             peek.row = _row;
@@ -40,21 +39,22 @@ struct Tokenizer {
             auto end = _n;
             for (char c; c = ch(), isGood() && !std::isspace(c); stepChar()) {
                 if (ch() == '/' && peekCh() == '/') {
-                    skipLine();
+                    skipSpace();
                     break;
                 }
                 ++end;
             }
 
             peek.content = _content.substr(start, end - start);
-            peek.type = Token::Word;
+            peek.type = tokenType(peek.content);
 
             _peek = peek;
         }
         catch (std::out_of_range &e) {
             _peek = {};
-            return;
         }
+
+        return _token;
     }
 
     operator bool() {
@@ -62,6 +62,19 @@ struct Tokenizer {
     }
 
 private:
+    void skipSpace() {
+        for (bool restart = true; restart;) {
+            restart = false;
+            for (char c; c = ch(), isGood() && std::isspace(c); stepChar()) {
+            }
+
+            if (ch() == '/' && peekCh() == '/') {
+                skipLine();
+                restart = true;
+            }
+        }
+    }
+
     void stepChar() {
         ++_n;
         if (!isGood()) {

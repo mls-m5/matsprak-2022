@@ -23,7 +23,7 @@ private:
     std::filesystem::path _path;
 };
 
-std::unique_ptr<File> openFile(std::filesystem::path path) {
+inline std::unique_ptr<File> openFile(std::filesystem::path path) {
     auto in = std::ifstream{path};
     auto ss = std::ostringstream{};
     ss << in.rdbuf();

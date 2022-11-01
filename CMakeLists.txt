@@ -5,6 +5,7 @@ project(matsprak-2022)
 add_executable(
     matsprak-2022
     src/main.cpp
+    src/token.cpp
     )
 
 target_compile_features(

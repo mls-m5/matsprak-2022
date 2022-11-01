@@ -18,8 +18,8 @@ public:
         return _tokenizer.peek();
     }
 
-    void next() {
-        _tokenizer.next();
+    const Token &next() {
+        return _tokenizer.next();
     }
 
     operator bool() {
