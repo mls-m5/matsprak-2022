@@ -6,6 +6,7 @@ add_executable(
     matsprak-2022
     src/main.cpp
     src/token.cpp
+    src/parse.cpp
     )
 
 target_compile_features(
