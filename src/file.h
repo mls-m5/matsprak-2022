@@ -18,6 +18,10 @@ struct File {
         return _content;
     }
 
+    const std::filesystem::path &path() {
+        return _path;
+    }
+
 private:
     std::string _content;
     std::filesystem::path _path;

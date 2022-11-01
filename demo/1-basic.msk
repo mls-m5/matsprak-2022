@@ -3,6 +3,11 @@
 // Only tokenizing with space
 module main ;
 
-fn main(args: str[]) {
+fn main ( args : str [ ] ) {
    println( "hello{}" , there ) ;
+   again ( )
+}
+
+fn again ( ) {
+   println( "hello-again" ) ;
 }

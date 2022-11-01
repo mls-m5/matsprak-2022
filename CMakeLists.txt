@@ -9,6 +9,12 @@ add_executable(
     src/parse.cpp
     )
 
+target_include_directories(
+    matsprak-2022
+    PRIVATE
+    src
+)
+
 target_compile_features(
     matsprak-2022
     PRIVATE

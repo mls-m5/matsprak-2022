@@ -1,6 +1,6 @@
 #pragma once
 
-#include "module.h"
+#include "parse/module.h"
 #include "state.h"
 
 #define vout std::cout

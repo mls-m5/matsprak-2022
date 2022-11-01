@@ -13,12 +13,27 @@ std::string toLower(std::string str) {
     return str;
 };
 
+constexpr Token::Type firstOf(const char *ch) {
+    return Token::Type{ch[0]};
+}
+
 #define KEYWORD(x)                                                             \
     { toLower(#x), Token::x }
 
+// Stuff like ( )
+#define SKEYWORD(x)                                                            \
+    { #x, firstOf(#x) }
+
 std::unordered_map<std::string, Token::Type> keywords = {
     KEYWORD(Module),
-    {";", Token::Semicolon},
+    KEYWORD(Fn),
+    SKEYWORD(;),
+    SKEYWORD([),
+    SKEYWORD(]),
+    SKEYWORD({),
+    SKEYWORD(}),
+    {"(", Token::BeginParen},
+    {")", Token::EndParen},
 };
 
 } // namespace
