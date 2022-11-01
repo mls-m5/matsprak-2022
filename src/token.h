@@ -10,10 +10,14 @@ struct Token {
     int row = 0;
     int col = 0;
 
-    enum Type {
-        Word,
-        Eof,
-    };
+    enum Type : int;
 
-    Type type = Eof;
+    Type type = {};
+};
+
+enum Token::Type : int {
+    Eof = 0,
+    Word,
+    Keyword,
+    Operator,
 };

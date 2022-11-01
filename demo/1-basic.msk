@@ -1,6 +1,8 @@
 
-module main;
+// First test
+// Only tokenizing with space
+module main ;
 
 fn main() {
-   println("hello {}", there);
+   println( "hello{}" , there ) ;
 }

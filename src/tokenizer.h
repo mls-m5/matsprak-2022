@@ -39,6 +39,10 @@ struct Tokenizer {
             auto start = _n;
             auto end = _n;
             for (char c; c = ch(), isGood() && !std::isspace(c); stepChar()) {
+                if (ch() == '/' && peekCh() == '/') {
+                    skipLine();
+                    break;
+                }
                 ++end;
             }
 
@@ -75,6 +79,18 @@ private:
 
     char ch() const {
         return _content.at(_n);
+    }
+
+    char peekCh() const {
+        if (_n < _content.size()) {
+            return _content[_n];
+        }
+        return '\0';
+    }
+
+    void skipLine() {
+        for (; ch() != '\n'; stepChar()) {
+        }
     }
 
     bool isGood() const {
