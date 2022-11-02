@@ -1,6 +1,6 @@
 
 #include "file.h"
-#include "parse.h"
+#include "parse/module.h"
 #include "state.h"
 
 int main(int argc, char *argv[]) {

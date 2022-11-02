@@ -1,24 +1,35 @@
 #pragma once
 
-#include "token.h"
-#include <vector>
+#include "ast/function.h"
+#include "ast/module.h"
+#include "log.h"
+#include "state.h"
+#include "utils.h"
 
-struct ArgumentType {
-    Token name;
-    bool isConst = true;
-    bool isRef = false;
-};
+FunctionSignature parseFunctionSignature(Module &m, State &s) {
+    // TODO: make sure function bodies finds other function bodies
+    auto f = FunctionSignature{};
 
-struct Argument {
-    Token name;
-    ArgumentType type;
-};
+    s.token().expect(Token::Fn);
+    s.next().expect(Token::Word);
 
-struct FunctionSignature {
-    Token name;
-    std::vector<Argument> arguments;
-};
+    f.name = s.token();
+    s.next().expect(Token::BeginParen);
 
-struct Function {
-    FunctionSignature signature;
-};
+    // TODO: handle parens
+    skipGroup(s, Token::BeginParen);
+
+    vout << "function signature " << f.mangledName() << "()" << std::endl;
+
+    return f;
+}
+
+void parseFunction(Module &m, State &s) {
+    auto signature = parseFunctionSignature(m, s);
+
+    auto f = m.functionExact(signature.mangledName());
+
+    vout << "parning function " << f->signature.mangledName() << std::endl;
+
+    skipGroup(s, Token::BeginBrace);
+}

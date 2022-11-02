@@ -18,6 +18,7 @@ struct Tokenizer {
     void reset() {
         _row = 1;
         _col = 0;
+        _n = 0;
         next();
         next();
     }

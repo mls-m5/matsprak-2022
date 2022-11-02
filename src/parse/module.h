@@ -1,11 +1,6 @@
 #pragma once
 
-#include "function.h"
-#include "token.h"
-#include <vector>
+#include "ast/module.h"
+#include "state.h"
 
-struct Module {
-    Token name;
-
-    std::vector<FunctionSignature> functions;
-};
+Module parse(State &s);
