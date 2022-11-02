@@ -1,6 +1,6 @@
 
 module apa ;
 
-fn apa ( ) {
+export fn apa ( ) {
     println ( "hello-from-apa" ) ;
 }

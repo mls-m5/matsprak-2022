@@ -4,4 +4,4 @@
 #include "state.h"
 #include <memory>
 
-Module *parse(State &s, Workspace &);
+Module *parseModule(State &s);

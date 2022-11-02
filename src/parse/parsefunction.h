@@ -21,6 +21,8 @@ FunctionSignature parseFunctionSignature(Module &m, State &s) {
     // TODO: handle parens
     skipGroup(s, Token::BeginParen);
 
+    f.shouldExport = s.decorations().shouldExport;
+
     vout << "function signature " << f.mangledName() << "()" << std::endl;
 
     return f;

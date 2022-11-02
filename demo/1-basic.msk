@@ -11,7 +11,7 @@ fn main ( args : str [ ] ) {
    apa ( )
 }
 
-fn again ( ) {
+export fn again ( ) {
    println ( "hello-again" ) ;
 }
 

@@ -9,18 +9,17 @@
 #include <memory>
 
 int main(int argc, char *argv[]) {
-    auto state = State(openFile("demo/1-basic.msk"));
-
     auto workspace = std::make_unique<Workspace>();
+
+    auto state = State(openFile("demo/1-basic.msk"), *workspace);
 
     workspace->moduleLookup = {
         {"main", "demo/1-basic.msk"},
         {"apa", "demo/1-import.msk"},
     };
 
-    auto root = parse(state, *workspace);
+    auto root = parseModule(state);
 
-    //    codegenIl(std::cout, *root);
     codegenCpp(std::cout, *root);
 
     return 0;
