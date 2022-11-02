@@ -28,10 +28,11 @@ void parseImport(Module &m, State &s) {
     s.token().expect(Token::Import);
     s.next().expect(Token::Word);
 
-    if (s.workspace().findModule(s.token())) {
+    if (auto module = s.workspace().findModule(s.token())) {
         // Module is already imported
         s.next().expect(Token::Semicolon);
         s.next();
+        m.imports.push_back(module);
         return;
     }
 
