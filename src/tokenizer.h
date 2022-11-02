@@ -11,6 +11,13 @@ struct Tokenizer {
     Tokenizer(std::shared_ptr<File> file)
         : _file{file}
         , _content{_file->content()} {
+        reset();
+    }
+
+    // Make ready for another pass
+    void reset() {
+        _row = 1;
+        _col = 0;
         next();
         next();
     }
@@ -121,6 +128,6 @@ private:
     Token _peek{nullptr};
 
     int _n = 0;
-    int _row = 0;
+    int _row = 1;
     int _col = 0;
 };

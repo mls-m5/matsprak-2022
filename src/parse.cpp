@@ -42,9 +42,9 @@ void skipGroup(State &s, Token::Type type) {
     }
 }
 
-Function parseFunctionDefinition(Module &m, State &s) {
+FunctionSignature parseFunctionDefinition(Module &m, State &s) {
     // TODO: make sure function bodies finds other function bodies
-    auto f = Function{};
+    auto f = FunctionSignature{};
 
     s.token().expect(Token::Fn);
     s.next().expect(Token::Word);
@@ -60,7 +60,18 @@ Function parseFunctionDefinition(Module &m, State &s) {
     return f;
 }
 
-void parseRoot(Module &m, State &s) {
+void parseModuleStatement(Module &m, State &s) {
+    if (s.token() == Token::Module) {
+        s.next();
+        m.name = s.token();
+        s.next().expect(Token::Semicolon);
+        s.next();
+
+        vout << "module " << m.name.content() << std::endl;
+    }
+}
+
+void parseRootDefinitions(Module &m, State &s) {
     auto &token = s.token();
     switch (token.type()) {
     case Token::Fn:
@@ -72,20 +83,31 @@ void parseRoot(Module &m, State &s) {
     }
 }
 
+void parseRoot(Module &m, State &s) {
+    auto &token = s.token();
+    switch (token.type()) {
+    case Token::Fn:
+        // TODO: Handle function body
+        //        m.functions.push_back(parseFunctionDefinition(m, s));
+        //        skipGroup(s, Token::BeginBrace);
+        //
+        break;
+    default:
+        throw ParsingError{token, "unexpected expression"};
+    }
+}
+
 Module parse(State &s) {
     auto root = Module{};
-
     try {
-
-        if (s.token() == Token::Module) {
-            s.next();
-            root.name = s.token();
-            s.next().expect(Token::Semicolon);
-            s.next();
-
-            vout << "module " << root.name.content() << std::endl;
+        parseModuleStatement(root, s);
+        while (s) {
+            parseRootDefinitions(root, s);
         }
 
+        s.reset();
+
+        parseModuleStatement(root, s);
         while (s) {
             parseRoot(root, s);
         }

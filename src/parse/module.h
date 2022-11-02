@@ -7,5 +7,5 @@
 struct Module {
     Token name;
 
-    std::vector<Function> functions;
+    std::vector<FunctionSignature> functions;
 };

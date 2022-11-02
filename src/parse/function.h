@@ -14,7 +14,11 @@ struct Argument {
     ArgumentType type;
 };
 
-struct Function {
+struct FunctionSignature {
     Token name;
     std::vector<Argument> arguments;
+};
+
+struct Function {
+    FunctionSignature signature;
 };

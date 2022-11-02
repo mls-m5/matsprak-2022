@@ -26,6 +26,10 @@ public:
         return _tokenizer;
     }
 
+    void reset() {
+        _tokenizer.reset();
+    }
+
 private:
     Tokenizer _tokenizer;
 };
