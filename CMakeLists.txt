@@ -6,6 +6,7 @@ add_executable(
     matsprak-2022
     src/main.cpp
     src/token.cpp
+    src/tokenizer.cpp
     src/parse/parsemodule.cpp
     src/parse/state.cpp
     src/codegen/il/codegenil.cpp

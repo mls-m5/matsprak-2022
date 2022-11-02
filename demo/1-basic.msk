@@ -6,7 +6,7 @@ module main ;
 import apa ;
 import std ;
 
-fn main ( args : Vector(str) ) {
+fn main ( args : Vector(str) ) -> int {
    println ( "hello{}" , "there" ) ;
    again ( ) ;
    apa ( ) ;

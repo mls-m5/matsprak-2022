@@ -5,6 +5,7 @@
 #include "errors.h"
 #include "file.h"
 #include "log.h"
+#include "parse/utils.h"
 #include "parsefunction.h"
 #include "state.h"
 #include <iostream>

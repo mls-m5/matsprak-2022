@@ -6,6 +6,18 @@
 
 namespace {
 
+std::string convertType(const Type &type) {
+    auto str = type.name.content();
+    if (str == "int") {
+        return "i32";
+    }
+    if (str == "float") {
+        return "float";
+    }
+
+    return "void";
+}
+
 struct Codegen {
     std::ostream &out;
 
@@ -31,23 +43,29 @@ struct Codegen {
     }
 };
 
-void codegen(Codegen &gen, const Function &f) {
-    if (f.signature.name.content() == "main") {
-        gen << "define i32 @main(i32 %0, ptr %1) {\n";
+void codegen(Codegen &gen, const FunctionSignature &f) {
+    if (f.name.content() == "main") {
+        gen << " " << convertType(f.type) << "  @main(i32 %0, ptr %1)";
         gen.varNum = 2;
     }
     else {
-        gen << "define i32 @" << f.signature._mangledName << "(";
+        gen << " i32 @" << f.mangledName() << "(";
         bool isFirst = true;
-        for (auto &arg : f.signature.arguments) {
+        for (auto &arg : f.arguments) {
             if (!isFirst) {
                 gen << ", ";
             }
             isFirst = false;
-            gen << "i32 " << gen.newName();
+            gen << convertType(arg.type) << " " << gen.newName();
         }
-        gen << ") {\n";
+        gen << ") ";
     }
+}
+
+void codegen(Codegen &gen, const Function &f) {
+    gen << "define ";
+    codegen(gen, f.signature);
+    gen << "{\n";
 
     ++gen.varNum;
 
@@ -61,6 +79,16 @@ void codegen(Codegen &gen, const Function &f) {
     gen << "}";
 }
 
+void codegenImport(Codegen &gen, const Module &module) {
+    for (auto &f : module.functions) {
+        if (f->signature.shouldExport) {
+            gen << "declare";
+            codegen(gen, f->signature);
+            gen << ";\n";
+        }
+    }
+}
+
 } // namespace
 
 void codegenIl(std::ostream &out, const Module &module) {
@@ -68,6 +96,12 @@ void codegenIl(std::ostream &out, const Module &module) {
 
     auto gen = Codegen{out};
 
+    out << "\n; imports\n";
+    for (auto &m : module.imports) {
+        codegenImport(gen, *m);
+    }
+
+    out << "\n; module\n";
     for (auto &f : module.functions) {
         gen.varNum = 0;
         codegen(gen, *f);

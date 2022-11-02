@@ -31,53 +31,7 @@ struct Tokenizer {
         return _peek;
     }
 
-    const Token &next() {
-        _token = std::move(_peek);
-
-        try {
-            skipSpace();
-
-            auto row = _row;
-            auto col = _col;
-
-            auto start = _n;
-            auto end = _n;
-
-            if (ch() == '"') {
-                stepChar();
-
-                for (; ch() != '"'; stepChar()) {
-                }
-
-                stepChar();
-                end = _n;
-            }
-            else {
-                for (char c; c = ch(), !std::isspace(c); stepChar()) {
-                    if (ch() == '/' && peekCh() == '/') {
-                        skipSpace();
-                        break;
-                    }
-                    ++end;
-                }
-            }
-
-            auto content = _content.substr(start, end - start);
-
-            _peek = Token{
-                _file,
-                content,
-                tokenType(content),
-                row,
-                col,
-            };
-        }
-        catch (std::out_of_range &e) {
-            _peek = {nullptr};
-        }
-
-        return _token;
-    }
+    const Token &next();
 
     operator bool() {
         return _token.type() != Token::Eof;

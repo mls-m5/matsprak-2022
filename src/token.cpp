@@ -38,6 +38,7 @@ std::unordered_map<std::string, Token::Type> keywords = {
     {"(", Token::BeginParen},
     {")", Token::EndParen},
     {",", Token::Comma},
+    {"->", Token::RightArrow},
 };
 
 auto createNames() {

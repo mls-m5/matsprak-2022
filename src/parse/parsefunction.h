@@ -6,7 +6,6 @@
 #include "log.h"
 #include "state.h"
 #include "token.h"
-#include "utils.h"
 
 namespace {
 
@@ -19,10 +18,19 @@ Argument parseArgument(Module &m, State &s) {
     arg.name = s.token();
 
     s.next().expect(Token::Colon);
-    s.next().expect(Token::Word); // TODO: Handle this
+    s.next().expect(Token::Word);
+
+    arg.type.name = s.token();
+
     s.next();
 
     return arg;
+}
+
+Type parseType(Module &m, State &s) {
+    auto type = Type{.name = s.token()};
+    s.next();
+    return type;
 }
 
 FunctionSignature parseFunctionSignature(Module &m, State &s) {
@@ -47,10 +55,13 @@ FunctionSignature parseFunctionSignature(Module &m, State &s) {
     }
 
     s.next();
-    //    // TODO: handle parens
-    //    skipGroup(s, Token::BeginParen);
 
     f.shouldExport = s.decorations().shouldExport;
+
+    if (s.token() == Token::RightArrow) {
+        s.next();
+        f.type = parseType(m, s);
+    }
 
     vout << "function signature " << f.mangledName() << "()" << std::endl;
 

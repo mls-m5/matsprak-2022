@@ -6,8 +6,11 @@
 #include <variant>
 #include <vector>
 
-struct ArgumentType {
+struct Type {
     Token name;
+};
+
+struct ArgumentType : public Type {
     bool isConst = true;
     bool isRef = false;
 };
@@ -20,10 +23,11 @@ struct Argument {
 struct FunctionSignature {
     Token name;
     std::vector<Argument> arguments;
-    std::string _mangledName = {};
+    mutable std::string _mangledName = {};
     bool shouldExport = false;
+    Type type;
 
-    std::string mangledName() {
+    std::string mangledName() const {
         if (_mangledName.empty()) {
             // TODO: implement this
             _mangledName = std::string{name.content()};

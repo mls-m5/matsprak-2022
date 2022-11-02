@@ -25,6 +25,7 @@ struct Token {
         Keyword,
         Operator,
         StringLiteral,
+        RightArrow,
 
         Module,
         Fn,
