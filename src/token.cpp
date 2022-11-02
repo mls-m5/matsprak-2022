@@ -36,14 +36,32 @@ std::unordered_map<std::string, Token::Type> keywords = {
     {")", Token::EndParen},
 };
 
+auto createNames() {
+    auto names = std::unordered_map<Token::Type, std::string>{};
+
+    for (auto &pair : keywords) {
+        names[pair.second] = pair.first;
+    }
+
+    names[Token::Word] = "Word";
+
+    return names;
+}
+
+std::unordered_map<Token::Type, std::string> keywordNames = createNames();
+
 } // namespace
 
 void Token::expect(Type t) const {
-    if (t != type) {
+    if (t != _type) {
         throw ParsingError{*this,
                            "Expected " + std::to_string(t) + " got " +
-                               std::to_string(type)};
+                               std::to_string(type())};
     }
+}
+
+std::string_view Token::typeName() const {
+    return tokenName(_type);
 }
 
 Token::Type tokenType(std::string_view str) {
@@ -52,4 +70,12 @@ Token::Type tokenType(std::string_view str) {
     }
 
     return Token::Word;
+}
+
+std::string_view tokenName(Token::Type type) {
+    if (auto f = keywordNames.find(type); f != keywordNames.end()) {
+        return f->second;
+    }
+
+    return {};
 }

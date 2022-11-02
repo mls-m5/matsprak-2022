@@ -27,13 +27,10 @@ struct Tokenizer {
         _token = std::move(_peek);
 
         try {
-            auto peek = Token{};
-
             skipSpace();
 
-            peek.file = _file;
-            peek.row = _row;
-            peek.col = _col;
+            auto row = _row;
+            auto col = _col;
 
             auto start = _n;
             auto end = _n;
@@ -45,20 +42,25 @@ struct Tokenizer {
                 ++end;
             }
 
-            peek.content = _content.substr(start, end - start);
-            peek.type = tokenType(peek.content);
+            auto content = _content.substr(start, end - start);
 
-            _peek = peek;
+            _peek = Token{
+                _file,
+                content,
+                tokenType(content),
+                row,
+                col,
+            };
         }
         catch (std::out_of_range &e) {
-            _peek = {};
+            _peek = {nullptr};
         }
 
         return _token;
     }
 
     operator bool() {
-        return _token.type != Token::Eof;
+        return _token.type() != Token::Eof;
     }
 
 private:
@@ -115,8 +117,8 @@ private:
 
     std::shared_ptr<File> _file;
     std::string_view _content;
-    Token _token;
-    Token _peek;
+    Token _token{nullptr};
+    Token _peek{nullptr};
 
     int _n = 0;
     int _row = 0;
