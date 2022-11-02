@@ -1,0 +1,64 @@
+
+
+trait Movable {
+    fn move() mut;
+}
+
+struct Vec3 {
+    x: float;
+    y: float;
+}
+
+template (T)
+struct Vector {
+    data: Unique(T[]);
+    size: int;
+    allocated_size: int;
+
+    fn resize(s: int) {
+        if (s < allocated_size) {
+           // Handle destructors
+           size = s;
+           return;
+        }
+
+        let newPtr = make_unique(T[]);
+
+        for (let i = 0... allocated_size) {
+            newPtr[i] = data[i]
+        }
+
+        data = newPtr; // Move operation
+    }
+
+    fn add(T value) {
+        // Handle constructors
+        resize(size + 1)
+        data[size - 1] = value;
+    }
+
+}
+
+struct Ship {
+    impl Movable;
+    extend Vec3;
+
+    fn move() mut {
+        x = x + 10;
+        y = y + 20;
+    }
+}
+
+fn main(args: Vector(str)) {
+    let ship = make_unique(Ship, 10, 20);
+
+    let movables =
+
+    let movables = Vector(Unique(Movable))(1, 2, 3);
+
+    movables.add(ship)
+
+    for (let movable in movables) {
+        movable.move();
+    }
+}

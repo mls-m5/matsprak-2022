@@ -2,12 +2,15 @@
 #include "ast/workspace.h"
 #include "codegen/cpp/codegencpp.h"
 #include "file.h"
+#include "log.h"
 #include "parse/parsemodule.h"
 #include <iostream>
 #include <memory>
 
 int main(int argc, char *argv[]) {
     auto workspace = std::make_unique<Workspace>();
+
+    logging::isVerbose = false;
 
     {
         workspace->moduleLookup = {

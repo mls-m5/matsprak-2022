@@ -13,3 +13,5 @@ bin/
 *.includes
 
 .qtc_clangd
+*.ll
+*.s
