@@ -3,28 +3,43 @@
 #include "parse/function.h"
 #include <iostream>
 
-void skipGroup(State &s) {
+// Use type Token::Any to match anything
+void skipGroup(State &s, Token::Type type) {
+    Token::Type begin = s.token().type();
+    Token::Type end = Token::Eof;
 
-    //    switch (s.token().type()) {}
+    if (s.token().type() != Token::Any) {
+        s.token().expect(type);
+    }
 
-    s.token().expect(Token::BeginBrace);
+    switch (begin) {
+    case Token::BeginBrace:
+        end = Token::EndBrace;
+        break;
+    case Token::BeginParen:
+        end = Token::EndParen;
+        break;
+    case Token::BeginBracket:
+        end = Token::EndBracket;
+        break;
+    default:
+        throw ParsingError{s.token(),
+                           "expected group but got " +
+                               std::string{s.token().content()}};
+    }
 
     int depth = 1;
 
+    s.next();
+
     for (const Token *t = &s.token(); depth; t = &s.next()) {
-        switch (t->type()) {
-        case Token::BeginBrace:
+        if (t->type() == begin) {
             ++depth;
-            break;
-        case Token::EndBrace:
-            ++depth;
-            break;
-        default:
-            break;
+        }
+        else if (t->type() == end) {
+            --depth;
         }
     }
-
-    s.next();
 }
 
 Function parseFunctionDefinition(Module &m, State &s) {
@@ -37,13 +52,10 @@ Function parseFunctionDefinition(Module &m, State &s) {
     f.name = s.token();
     s.next().expect(Token::BeginParen);
 
-    vout << "function " << f.name.content() << "()" << std::endl;
-
     // TODO: handle parens
-    s.next().expect(Token::EndParen);
-    s.next();
+    skipGroup(s, Token::BeginParen);
 
-    skipGroup(s);
+    vout << "function " << f.name.content() << "()" << std::endl;
 
     return f;
 }
@@ -53,7 +65,7 @@ void parseRoot(Module &m, State &s) {
     switch (token.type()) {
     case Token::Fn:
         m.functions.push_back(parseFunctionDefinition(m, s));
-        skipGroup(s);
+        skipGroup(s, Token::BeginBrace);
         break;
     default:
         throw ParsingError{token, "unexpected expression"};

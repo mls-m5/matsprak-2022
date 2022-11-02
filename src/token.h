@@ -18,6 +18,7 @@ struct Token {
         Eof = 0,
 
         Word = 256,
+        Any, // For matching
         Keyword,
         Operator,
 
