@@ -40,5 +40,10 @@ void skipGroup(State &s, Token::Type type) {
         else if (t->type() == end) {
             --depth;
         }
+
+        if (!s) {
+            throw ParsingError{s.token(),
+                               "got Eof before found end parenthesis"};
+        }
     }
 }

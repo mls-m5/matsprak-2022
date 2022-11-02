@@ -3,16 +3,16 @@
 // Only tokenizing with space for now
 module main ;
 
-import apa ;
-import std ;
+import apa;
+import std;
 
-fn main ( args : Vector(str) ) -> int {
-   println ( "hello{}" , "there" ) ;
-   again ( ) ;
-   apa ( ) ;
+fn main (args : Vectorstr) -> int {
+   println("hello{}", "there");
+   again();
+   apa();
 }
 
-export fn again ( i : int ) {
-   println ( "hello-again" ) ;
+export fn again (i: int){
+   println("hello-again");
 }
 
