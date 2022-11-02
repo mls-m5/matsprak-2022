@@ -2,6 +2,7 @@
 
 #include "token.h"
 #include <string>
+#include <variant>
 #include <vector>
 
 struct ArgumentType {
@@ -30,6 +31,22 @@ struct FunctionSignature {
     }
 };
 
+struct Expression {};
+
+struct FunctionCall {
+    struct Function *function = nullptr;
+};
+
+struct Statement {
+    std::variant<Expression, FunctionCall> e;
+};
+
+struct FunctionBody {
+    std::vector<Statement> commands;
+};
+
 struct Function {
     FunctionSignature signature;
+
+    FunctionBody body;
 };

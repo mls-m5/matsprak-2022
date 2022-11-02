@@ -43,8 +43,12 @@ struct Token {
     Token(std::nullptr_t) {}
     Token() = default;
 
-    bool operator==(Type t) const {
+    bool operator==(const Type &t) const {
         return t == _type;
+    }
+
+    bool operator==(const Token &other) const {
+        return other.content() == _content;
     }
 
     void expect(Type t) const;
@@ -57,6 +61,10 @@ struct Token {
 
     std::string_view content() const {
         return _content;
+    }
+
+    std::string str() const {
+        return std::string{_content};
     }
 
     int row() const {

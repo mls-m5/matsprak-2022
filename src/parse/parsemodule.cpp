@@ -6,6 +6,7 @@
 #include "file.h"
 #include "log.h"
 #include "parsefunction.h"
+#include "state.h"
 #include <iostream>
 #include <memory>
 
@@ -26,13 +27,19 @@ void parseImport(Module &m, State &s) {
     s.token().expect(Token::Import);
     s.next().expect(Token::Word);
 
+    if (s.workspace().findModule(s.token())) {
+        // Module is already imported
+        s.next().expect(Token::Semicolon);
+        s.next();
+        return;
+    }
+
     auto filename = m.workspace->findModulePath(s.token());
     if (filename.empty()) {
         throw ParsingError(s.token(), "could not find module with name");
     }
 
-    auto newState = State(openFile(filename), s.workspace());
-    auto newModule = parseModule(newState);
+    auto newModule = parseModule(openFile(filename), s.workspace());
 
     m.imports.push_back(newModule);
     vout << "end of import module: " << newModule->name << std::endl;
@@ -72,8 +79,8 @@ void parseRootDefinitions(Module &m, State &s) {
     auto &token = s.token();
     switch (token.type()) {
     case Token::Fn:
-        m.functions.push_back(
-            Function{.signature = parseFunctionSignature(m, s)});
+        m.functions.push_back(std::make_unique<Function>(
+            Function{.signature = parseFunctionSignature(m, s)}));
         skipGroup(s, Token::BeginBrace);
         break;
     default:
@@ -97,34 +104,42 @@ void parseRoot(Module &m, State &s) {
 
 } // namespace
 
-Module *parseModule(State &s) {
-    auto &workspace = s.workspace();
+Module *parseModule(std::shared_ptr<File> file, Workspace &workspace) {
     workspace.modules.push_back(std::make_unique<Module>());
-    auto root = workspace.modules.back().get();
-    root->workspace = &workspace;
+    auto module = workspace.modules.back().get();
+    auto s = State{file, *module, workspace};
+    module->workspace = &workspace;
+
+    bool isRoot = false;
 
     if (!workspace.root) {
-        workspace.root = root;
+        workspace.root = module;
+        isRoot = true;
     }
 
     try {
-        parseModuleStatement(*root, s);
-        parseHeader(*root, s);
+        parseModuleStatement(*module, s);
+        parseHeader(*module, s);
         while (s) {
-            parseRootDefinitions(*root, s);
+            parseRootDefinitions(*module, s);
+        }
+
+        if (!isRoot) {
+            return module;
         }
 
         s.reset();
 
-        parseModuleStatement(*root, s);
+        parseModuleStatement(*module, s);
         skipHeader(s);
         while (s) {
-            parseRoot(*root, s);
+            parseRoot(*module, s);
         }
     }
     catch (ParsingError &e) {
         std::cerr << e.what() << std::endl;
+        workspace.hasParsingError = true;
     }
 
-    return root;
+    return module;
 }

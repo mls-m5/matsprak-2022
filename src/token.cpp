@@ -57,8 +57,10 @@ std::unordered_map<Token::Type, std::string> keywordNames = createNames();
 void Token::expect(Type t) const {
     if (t != _type) {
         throw ParsingError{*this,
-                           "Expected " + std::to_string(t) + " got " +
-                               std::to_string(type())};
+                           "Expected '" + std::string{tokenName(t)} + "' (" +
+                               std::to_string(t) + ") got '" +
+                               std::string{tokenName(type())} + "' (" +
+                               std::to_string(type()) + ")"};
     }
 }
 

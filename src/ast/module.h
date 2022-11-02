@@ -15,15 +15,18 @@ struct Module {
 
     Token name;
 
-    std::vector<Function> functions;
+    std::vector<std::unique_ptr<Function>> functions;
     std::vector<Module *> imports;
 
     struct Workspace *workspace;
 
-    Function *functionExact(std::string_view mangledName) {
+    Function *functionExact(std::string_view mangledName, bool publicOnly) {
         for (auto &f : functions) {
-            if (f.signature.mangledName() == mangledName) {
-                return &f;
+            if (publicOnly && !f->signature.shouldExport) {
+                continue;
+            }
+            if (f->signature.mangledName() == mangledName) {
+                return f.get();
             }
         }
 

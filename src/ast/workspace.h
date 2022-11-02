@@ -18,7 +18,19 @@ struct Workspace {
         return {};
     }
 
+    Module *findModule(const Token &name) {
+        for (auto &m : modules) {
+            if (m->name == name) {
+                return m.get();
+            }
+        }
+
+        return nullptr;
+    }
+
     std::vector<std::unique_ptr<Module>> modules;
 
     Module *root = nullptr;
+
+    bool hasParsingError = false;
 };

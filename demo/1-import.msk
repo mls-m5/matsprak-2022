@@ -1,6 +1,8 @@
 
 module apa ;
 
+import std ;
+
 export fn apa ( ) {
     println ( "hello-from-apa" ) ;
 }

@@ -7,6 +7,7 @@ add_executable(
     src/main.cpp
     src/token.cpp
     src/parse/parsemodule.cpp
+    src/parse/state.cpp
     src/codegen/il/codegenil.cpp
     src/codegen/cpp/codegencpp.cpp
     )

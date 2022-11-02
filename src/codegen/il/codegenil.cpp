@@ -14,7 +14,7 @@ void codegenIl(std::ostream &out, const Module &module) {
     vout << "generating code" << std::endl;
 
     for (auto &f : module.functions) {
-        codegen(out, f.signature);
+        codegen(out, f->signature);
         out << "{}\n\n";
     }
 }
