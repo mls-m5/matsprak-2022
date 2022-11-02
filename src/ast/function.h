@@ -1,6 +1,7 @@
 #pragma once
 
 #include "token.h"
+#include <memory>
 #include <string>
 #include <variant>
 #include <vector>
@@ -31,14 +32,25 @@ struct FunctionSignature {
     }
 };
 
-struct Expression {};
-
 struct FunctionCall {
+    ~FunctionCall();
+    FunctionCall();
     struct Function *function = nullptr;
+    std::shared_ptr<struct FunctionCallArgs> args;
+};
+
+struct StringLiteral {
+    Token string;
+};
+
+using Expression = std::variant<FunctionCall, StringLiteral>;
+
+struct FunctionCallArgs {
+    std::vector<Expression> args;
 };
 
 struct Statement {
-    std::variant<Expression, FunctionCall> e;
+    Expression e;
 };
 
 struct FunctionBody {
@@ -50,3 +62,8 @@ struct Function {
 
     FunctionBody body;
 };
+
+inline FunctionCall::~FunctionCall() = default;
+
+inline FunctionCall::FunctionCall()
+    : args{std::make_shared<FunctionCallArgs>()} {}

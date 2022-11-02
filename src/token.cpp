@@ -36,6 +36,7 @@ std::unordered_map<std::string, Token::Type> keywords = {
     SKEYWORD(}),
     {"(", Token::BeginParen},
     {")", Token::EndParen},
+    {",", Token::Comma},
 };
 
 auto createNames() {
@@ -46,6 +47,7 @@ auto createNames() {
     }
 
     names[Token::Word] = "Word";
+    names[Token::StringLiteral] = "StringLiteral";
 
     return names;
 }
@@ -69,6 +71,13 @@ std::string_view Token::typeName() const {
 }
 
 Token::Type tokenType(std::string_view str) {
+    if (str.empty()) {
+        return Token::Eof;
+    }
+    if (str.front() == '"') {
+        return Token::StringLiteral;
+    }
+
     if (auto f = keywords.find(std::string{str}); f != keywords.end()) {
         return f->second;
     }

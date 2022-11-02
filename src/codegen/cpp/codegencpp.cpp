@@ -7,35 +7,41 @@
 
 namespace {
 
+void codegen(std::ostream &out, const Expression &e);
+
 void codegen(std::ostream &out, const FunctionSignature &signature) {
     out << "void " << signature.name << "()";
 }
 
 void codegen(std::ostream &out, const FunctionCall &f) {
-    out << f.function->signature.name << "();\n";
+    out << f.function->signature.name << "(";
+
+    bool isFirst = true;
+
+    for (auto &e : f.args->args) {
+        if (!isFirst) {
+            out << ", ";
+        }
+        isFirst = false;
+        codegen(out, e);
+    }
+
+    out << ");\n";
 }
 
-void codegen(std::ostream &out, const Expression &f) {
-    throw std::runtime_error{"not implemented"};
+void codegen(std::ostream &out, const StringLiteral &s) {
+    out << s.string << " ";
+}
+
+void codegen(std::ostream &out, const Expression &e) {
+    std::visit([&out](auto &e) { codegen(out, e); }, e);
 }
 
 void codegen(std::ostream &out, const FunctionBody &body) {
     out << "{\n";
 
-    struct Visitor {
-        std::ostream &out;
-
-        void operator()(const FunctionCall &f) {
-            codegen(out, f);
-        }
-        void operator()(const Expression &f) {
-            out << "expression\n";
-        }
-    };
-
     for (auto &command : body.commands) {
-        //        std::visit(Visitor{out}, command.e);
-        std::visit([&out](auto &e) { codegen(out, e); }, command.e);
+        codegen(out, command.e);
     }
 
     out << "}";

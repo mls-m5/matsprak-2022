@@ -10,6 +10,8 @@
 
 namespace {
 
+Expression parseExpression(Module &m, FunctionBody &body, State &s);
+
 FunctionSignature parseFunctionSignature(Module &m, State &s) {
     // TODO: make sure function bodies finds other function bodies
     auto f = FunctionSignature{};
@@ -38,29 +40,53 @@ FunctionCall parseCallStatement(Module &m, FunctionBody &body, State &s) {
         throw ParsingError{s.token(), "could not find function"};
     }
 
+    s.next().expect(Token::BeginParen);
     s.next();
-
-    skipGroup(s, Token::BeginParen);
-
-    //    s.next().expect(Token::BeginParen);
-    //    s.next().expect(Token::BeginParen);
+    for (; s.token().type() != Token::EndParen;) {
+        fc.args->args.push_back(parseExpression(m, body, s));
+        if (s.token().type() == Token::Comma) {
+            s.next();
+            continue;
+        }
+        s.token().expect(Token::EndParen);
+        break;
+    }
+    s.next();
     s.token().expect(Token::Semicolon);
     s.next();
 
     return fc;
 }
 
-bool parseBlockStatement(Module &m, Function &f, State &s) {
+Expression parseExpression(Module &m, FunctionBody &body, State &s) {
     switch (s.token().type()) {
     case Token::Word:
-        f.body.commands.push_back({parseCallStatement(m, f.body, s)});
+        if (s.peek() == Token::BeginParen) {
+            return parseCallStatement(m, body, s);
+        }
         break;
+    case Token::StringLiteral:
+
+    {
+        auto sl = StringLiteral{s.token()};
+        s.next();
+        return sl;
+    }
+
+    default:
+        break;
+    }
+    throw ParsingError(s.token(), "Unexpected symbol");
+}
+
+bool parseBlockStatement(Module &m, Function &f, State &s) {
+    switch (s.token().type()) {
 
     case Token::EndBrace:
         s.next(); // End function
         return false;
     default:
-        throw ParsingError(s.token(), "Unexpected symbol");
+        f.body.commands.push_back({parseExpression(m, f.body, s)});
     }
     return true;
 }

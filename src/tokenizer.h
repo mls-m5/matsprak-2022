@@ -42,12 +42,24 @@ struct Tokenizer {
 
             auto start = _n;
             auto end = _n;
-            for (char c; c = ch(), isGood() && !std::isspace(c); stepChar()) {
-                if (ch() == '/' && peekCh() == '/') {
-                    skipSpace();
-                    break;
+
+            if (ch() == '"') {
+                stepChar();
+
+                for (; ch() != '"'; stepChar()) {
                 }
-                ++end;
+
+                stepChar();
+                end = _n;
+            }
+            else {
+                for (char c; c = ch(), !std::isspace(c); stepChar()) {
+                    if (ch() == '/' && peekCh() == '/') {
+                        skipSpace();
+                        break;
+                    }
+                    ++end;
+                }
             }
 
             auto content = _content.substr(start, end - start);

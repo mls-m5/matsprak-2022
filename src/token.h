@@ -15,6 +15,7 @@ struct Token {
         BeginBracket = '[',
         EndBracket = ']',
         Semicolon = ';',
+        Comma = ',',
 
         Eof = 0,
 
@@ -22,6 +23,7 @@ struct Token {
         Any, // For matching
         Keyword,
         Operator,
+        StringLiteral,
 
         Module,
         Fn,
@@ -82,6 +84,12 @@ struct Token {
     friend std::ostream &operator<<(std::ostream &stream, const Token &token) {
         stream << token.content();
         return stream;
+    }
+
+    Token substr(size_t i, size_t n) {
+        auto t = *this;
+        t._content = _content.substr(i, n);
+        return t;
     }
 
 private:
