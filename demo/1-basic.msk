@@ -3,9 +3,12 @@
 // Only tokenizing with space
 module main ;
 
+import apa ;
+
 fn main ( args : str [ ] ) {
    println ( "hello{}" , there ) ;
    again ( )
+   apa ( )
 }
 
 fn again ( ) {

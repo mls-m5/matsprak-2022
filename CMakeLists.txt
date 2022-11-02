@@ -6,7 +6,9 @@ add_executable(
     matsprak-2022
     src/main.cpp
     src/token.cpp
-    src/parse/module.cpp
+    src/parse/parsemodule.cpp
+    src/codegen/il/codegenil.cpp
+    src/codegen/cpp/codegencpp.cpp
     )
 
 target_include_directories(

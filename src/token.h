@@ -3,6 +3,7 @@
 #include "file.h"
 #include <cstddef>
 #include <memory>
+#include <ostream>
 #include <string_view>
 
 struct Token {
@@ -24,6 +25,8 @@ struct Token {
 
         Module,
         Fn,
+        Import,
+        Export,
     };
 
     Token(std::shared_ptr<File> file,
@@ -66,6 +69,11 @@ struct Token {
 
     Type type() const {
         return _type;
+    }
+
+    friend std::ostream &operator<<(std::ostream &stream, const Token &token) {
+        stream << token.content();
+        return stream;
     }
 
 private:

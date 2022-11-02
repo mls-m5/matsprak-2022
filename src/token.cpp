@@ -27,6 +27,8 @@ constexpr Token::Type firstOf(const char *ch) {
 std::unordered_map<std::string, Token::Type> keywords = {
     KEYWORD(Module),
     KEYWORD(Fn),
+    KEYWORD(Import),
+    KEYWORD(Export),
     SKEYWORD(;),
     SKEYWORD([),
     SKEYWORD(]),

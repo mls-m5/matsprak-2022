@@ -6,6 +6,8 @@
 #include "state.h"
 #include "utils.h"
 
+namespace {
+
 FunctionSignature parseFunctionSignature(Module &m, State &s) {
     // TODO: make sure function bodies finds other function bodies
     auto f = FunctionSignature{};
@@ -33,3 +35,5 @@ void parseFunction(Module &m, State &s) {
 
     skipGroup(s, Token::BeginBrace);
 }
+
+} // namespace
