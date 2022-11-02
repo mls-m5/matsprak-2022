@@ -121,6 +121,9 @@ bool parseBlockStatement(Module &m, Function &f, State &s) {
     case Token::EndBrace:
         s.next(); // End function
         return false;
+    case Token::Let:
+        throw "continue here";
+        break;
     default:
         f.body.commands.push_back({parseExpression(m, f.body, s)});
     }

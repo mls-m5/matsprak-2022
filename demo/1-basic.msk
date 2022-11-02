@@ -1,6 +1,5 @@
 
 // First test
-// Only tokenizing with space for now
 module main ;
 
 import apa;

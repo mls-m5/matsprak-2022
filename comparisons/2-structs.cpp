@@ -4,6 +4,7 @@ struct Apa {
     int x;
     int y;
     double z;
+    char *c;
 };
 
 int apFunc(Apa &apa) {

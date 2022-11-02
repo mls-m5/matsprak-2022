@@ -31,6 +31,7 @@ struct Token {
         Fn,
         Import,
         Export,
+        Let,
     };
 
     Token(std::shared_ptr<File> file,
@@ -46,6 +47,12 @@ struct Token {
 
     Token(std::nullptr_t) {}
     Token() = default;
+
+    static Token fromString(std::string str, Token::Type type = Type::Word) {
+        auto file = std::make_shared<File>("inline", str);
+        auto token = Token(file, file->content(), Type::Word, 1, 1);
+        return token;
+    }
 
     bool operator==(const Type &t) const {
         return t == _type;

@@ -29,6 +29,7 @@ std::unordered_map<std::string, Token::Type> keywords = {
     KEYWORD(Fn),
     KEYWORD(Import),
     KEYWORD(Export),
+    KEYWORD(Let),
     SKEYWORD(;),
     SKEYWORD([),
     SKEYWORD(]),

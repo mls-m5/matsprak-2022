@@ -16,13 +16,23 @@ int main(int argc, char *argv[]) {
     logging::isVerbose = true;
 
     {
-        workspace->moduleLookup = {
-            {"main", "demo/1-basic.msk"},
-            {"apa", "demo/1-import.msk"},
-            {"std", "demo/1-std.msk"},
-        };
+        int version = 2;
+        if (version == 1) {
+            workspace->moduleLookup = {
+                {"main", "demo/1-basic.msk"},
+                {"apa", "demo/1-import.msk"},
+                {"std", "demo/1-std.msk"},
+            };
+        }
+        if (version == 2) {
+            workspace->moduleLookup = {
+                {"main", "demo/2-vars.msk"},
+            };
+        }
 
-        parseModule(openFile("demo/1-basic.msk"), *workspace);
+        auto f = workspace->findModulePath(Token::fromString("main"));
+
+        parseModule(openFile(f), *workspace);
     }
 
     if (workspace->hasParsingError) {

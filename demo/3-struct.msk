@@ -1,0 +1,14 @@
+
+module main;
+
+struct Apa {
+   x: int;
+   y: int;
+}
+
+fn main() -> int {
+    let apa = Apa{};
+    apa.x = 20;
+    apa.y = 40;
+    return apa.x + apa.y;
+}
