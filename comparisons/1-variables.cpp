@@ -11,3 +11,8 @@ float x() {
     float y = 30;
     return x - y;
 }
+
+int minimal() {
+    int x = 30;
+    return x;
+}

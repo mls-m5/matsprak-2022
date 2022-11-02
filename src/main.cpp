@@ -1,16 +1,19 @@
 
 #include "ast/workspace.h"
 #include "codegen/cpp/codegencpp.h"
+#include "codegen/il/codegenil.h"
 #include "file.h"
 #include "log.h"
 #include "parse/parsemodule.h"
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <memory>
 
 int main(int argc, char *argv[]) {
     auto workspace = std::make_unique<Workspace>();
 
-    logging::isVerbose = false;
+    logging::isVerbose = true;
 
     {
         workspace->moduleLookup = {
@@ -28,6 +31,15 @@ int main(int argc, char *argv[]) {
     }
 
     codegenCpp(std::cout, *workspace->root);
+
+    auto tmpPath = std::filesystem::path{"tmp.ll"};
+    {
+        auto file = std::ofstream{tmpPath};
+        codegenIl(file, *workspace->root);
+        std::cout.flush();
+    }
+    std::system(("cat " + tmpPath.string()).c_str());
+    std::system(("llc-16 " + tmpPath.string()).c_str());
 
     return 0;
 }
