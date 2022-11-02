@@ -12,6 +12,19 @@ namespace {
 
 Expression parseExpression(Module &m, FunctionBody &body, State &s);
 
+Argument parseArgument(Module &m, State &s) {
+    s.token().expect(Token::Word);
+
+    auto arg = Argument{};
+    arg.name = s.token();
+
+    s.next().expect(Token::Colon);
+    s.next().expect(Token::Word); // TODO: Handle this
+    s.next();
+
+    return arg;
+}
+
 FunctionSignature parseFunctionSignature(Module &m, State &s) {
     // TODO: make sure function bodies finds other function bodies
     auto f = FunctionSignature{};
@@ -21,9 +34,21 @@ FunctionSignature parseFunctionSignature(Module &m, State &s) {
 
     f.name = s.token();
     s.next().expect(Token::BeginParen);
+    s.next();
 
-    // TODO: handle parens
-    skipGroup(s, Token::BeginParen);
+    for (; s.token().type() != Token::EndParen;) {
+        f.arguments.push_back(parseArgument(m, s));
+        if (s.token().type() == Token::Comma) {
+            s.next();
+            continue;
+        }
+        s.token().expect(Token::EndParen);
+        break;
+    }
+
+    s.next();
+    //    // TODO: handle parens
+    //    skipGroup(s, Token::BeginParen);
 
     f.shouldExport = s.decorations().shouldExport;
 

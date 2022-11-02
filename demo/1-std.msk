@@ -1,5 +1,5 @@
 
 module std ;
 
-export fn println ( str s ) {
+export fn println ( s : str ) {
 }

@@ -34,6 +34,7 @@ std::unordered_map<std::string, Token::Type> keywords = {
     SKEYWORD(]),
     SKEYWORD({),
     SKEYWORD(}),
+    SKEYWORD(:),
     {"(", Token::BeginParen},
     {")", Token::EndParen},
     {",", Token::Comma},

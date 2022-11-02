@@ -16,6 +16,7 @@ struct Token {
         EndBracket = ']',
         Semicolon = ';',
         Comma = ',',
+        Colon = ':',
 
         Eof = 0,
 

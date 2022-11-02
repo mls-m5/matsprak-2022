@@ -6,13 +6,13 @@ module main ;
 import apa ;
 import std ;
 
-fn main ( args : str [ ] ) {
+fn main ( args : Vector(str) ) {
    println ( "hello{}" , "there" ) ;
    again ( ) ;
    apa ( ) ;
 }
 
-export fn again ( ) {
+export fn again ( i : int ) {
    println ( "hello-again" ) ;
 }
 
