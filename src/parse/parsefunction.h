@@ -98,6 +98,17 @@ Expression parseCallStatement(Module &m, State &s) {
 
 // Expression parseParentheses(Module &m, State &s) {}
 
+Expression parseVariableAccessor(Module &m, State &s) {
+    auto name = s.token();
+
+    auto var = s.findVariable(name);
+    if (!var) {
+        throw ParsingError{name, "could not find variable"};
+    }
+
+    return VariableAccessor{name, s.findVariable(name)->type};
+}
+
 Expression parseExpression(Module &m, State &s) {
     auto &f = s.function();
     auto &body = f.body;
@@ -110,7 +121,7 @@ Expression parseExpression(Module &m, State &s) {
             exp = parseCallStatement(m, s);
             break;
         }
-        throw ParsingError(s.token(), "Unexpected symbol");
+        exp = parseVariableAccessor(m, s);
     case Token::BeginParen:
     case Token::StringLiteral: {
         auto sl = StringLiteral{s.token()};
@@ -125,7 +136,7 @@ Expression parseExpression(Module &m, State &s) {
         break;
     }
     default:
-        throw ParsingError(s.token(), "Unexpected symbol");
+        throw ParsingError(s.token(), "Unexpected symbol: Expected expression");
         break;
     }
 

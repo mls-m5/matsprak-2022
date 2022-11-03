@@ -88,8 +88,18 @@ struct BinaryExpression {
     DecoratedType type() const;
 };
 
+struct VariableAccessor {
+    Token name;
+    DecoratedType varType;
+
+    DecoratedType type() const {
+        return varType;
+    }
+};
+
 #define EXPRESSION_LIST                                                        \
-    FunctionCall, StringLiteral, NumericLiteral, BinaryExpression
+    FunctionCall, StringLiteral, NumericLiteral, BinaryExpression,             \
+        VariableAccessor
 
 // Done like this to be able to forward declare it
 class Expression : public std::variant<EXPRESSION_LIST> {

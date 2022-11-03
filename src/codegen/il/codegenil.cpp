@@ -1,8 +1,10 @@
 #include "codegenil.h"
 #include "ast/function.h"
+#include "errors.h"
 #include "log.h"
 #include <ostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 namespace {
@@ -130,18 +132,23 @@ void codegen(Codegen &gen, const FunctionSignature &f) {
     }
 }
 
+std::string codegen(Codegen &gen, const VariableAccessor &d) {
+    throw NotImplemented{"implement this"};
+    return {};
+}
+
 std::string codegen(Codegen &gen, const VariableDeclaration &d) {
-    throw "implement this";
+    throw NotImplemented{"implement this"};
     return {};
 }
 
 std::string codegen(Codegen &gen, const BinaryExpression &e) {
-    throw "implement this";
+    throw NotImplemented{"implement this"};
     return {};
 }
 
 std::string codegen(Codegen &gen, const ReturnStatement &e) {
-    throw "implement this";
+    throw NotImplemented{"implement this"};
     return {};
 }
 

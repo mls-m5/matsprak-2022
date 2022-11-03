@@ -7,7 +7,12 @@
 #include <stdexcept>
 #include <string>
 
+namespace errors {
+namespace detail {} // namespace detail
+} // namespace errors
+
 class ParsingError : public std::runtime_error {
+
     std::string createText(const Token &token,
                            const std::string &str,
                            std::experimental::source_location location) {
@@ -28,7 +33,7 @@ class ParsingError : public std::runtime_error {
         ss << ": error: \"" << token.content() << "\" " << str;
 
         if (logging::isVerbose) {
-            ss << "\n in file: " << location.file_name() << ":"
+            ss << "\nin file: " << location.file_name() << ":"
                << location.line() << " in " << location.function_name()
                << "(...)";
         }
@@ -41,4 +46,22 @@ public:
                  std::experimental::source_location location =
                      std::experimental::source_location::current())
         : runtime_error{createText(token, str, location)} {}
+};
+
+class NotImplemented : public std::runtime_error {
+    std::string createText(const std::string &str,
+                           std::experimental::source_location location) {
+        auto ss = std::ostringstream{};
+
+        ss << "not implemented: ";
+        ss << "\nin file: " << location.file_name() << ":" << location.line()
+           << " in " << location.function_name() << "(...)";
+        return ss.str();
+    }
+
+public:
+    NotImplemented(const std::string &str,
+                   std::experimental::source_location location =
+                       std::experimental::source_location::current())
+        : runtime_error{createText(str, location)} {}
 };

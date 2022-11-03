@@ -80,6 +80,16 @@ public:
         _function = f;
     }
 
+    const Variable *findVariable(const Token &name) {
+        if (_function) {
+            if (auto f = _function->body.findVariable(name)) {
+                return f;
+            }
+        }
+
+        return nullptr;
+    }
+
     Function *findFunction(Token name);
 
 private:
