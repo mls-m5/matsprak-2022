@@ -1,4 +1,4 @@
-#include "codegenil.h"
+#include "codegenir.h"
 #include "ast/function.h"
 #include "errors.h"
 #include "log.h"
@@ -6,6 +6,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -26,12 +27,26 @@ std::string convertType(const Type &type) {
     return "void";
 }
 
+int getTypeAlignment(std::string_view name) {
+    static auto map = std::unordered_map<std::string_view, int>{
+        {"i32", 4},
+        {"i16", 4},
+        {"i8", 1},
+        {"ptr", 8},
+        {"void", 0},
+    };
+
+    return map.at(name);
+}
+
 struct GenType {
     GenType(const Type &type)
-        : name{convertType(type)} {}
+        : name{convertType(type)}
+        , align{getTypeAlignment(name)} {}
 
     std::string name;
     bool isPtr = false;
+    int align = 0;
 
     static GenType fromString(std::string str, bool isPtr) {
         return GenType{std::move(str), isPtr};
@@ -40,7 +55,8 @@ struct GenType {
 private:
     GenType(std::string name, bool isPtr)
         : name{name}
-        , isPtr{isPtr} {}
+        , isPtr{isPtr}
+        , align{getTypeAlignment(name)} {}
 };
 
 std::ostream &operator<<(std::ostream &out, const GenType &type) {
@@ -94,7 +110,7 @@ struct Codegen {
     GenVar newVar(std::string storeName, GenType type) {
         type.isPtr = true;
         auto var = newName(storeName, type);
-        println(var.name, "= alloca", type.name);
+        println(var.name, "= alloca", type.name, ", align ", type.align);
 
         return var;
     }
@@ -138,7 +154,13 @@ struct Codegen {
 
         auto var2 = newName("", GenType::fromString(var.type.name, false));
 
-        println(var2.name, "= load", var2.type, ", ptr", var.name);
+        println(var2.name,
+                "= load",
+                var2.type,
+                ", ptr",
+                var.name,
+                ", align",
+                var.type.align);
 
         return var2;
     }
@@ -147,7 +169,13 @@ struct Codegen {
         if (from.type.isPtr) {
             throw GenError{"cannot store of ptr type"};
         }
-        println("store", from.type.name, from.name, ", ptr", to.name);
+        println("store",
+                from.type.name,
+                from.name,
+                ", ptr",
+                to.name,
+                ", align",
+                to.type.align);
     }
 
     template <typename T>
@@ -175,7 +203,13 @@ GenVar codegen(Codegen &gen, const NumericLiteral &s) {
     //    return "ptr " + gen.newString(s.string.str());
     auto type = GenType(s.type());
     auto var = gen.newVar("", s.type());
-    gen.println("store ", type.name, s.value, ", ptr", var.name);
+    gen.println("store ",
+                type.name,
+                s.value,
+                ", ptr",
+                var.name,
+                ", align",
+                var.type.align);
     return var;
 }
 
@@ -280,14 +314,16 @@ void codegen(Codegen &gen, const FunctionBody &body) {
         gen << "ret void\n";
     }
     else {
-        auto var1 = gen.newVar("", GenType::fromString("i32", true));
-        gen << "\n; just return zero in case of emergency\n";
-        gen << "store i32 0, ptr " << var1.name << "\n";
-        auto var2 = gen.newName("", GenType::fromString("i32", true));
-        gen << var2.name << " = load i32, ptr " << var1.name << "\n";
-        gen << "ret i32 " << var2.name << "\n";
+        //        auto var1 = gen.newVar("", GenType::fromString("i32", true));
+        //        gen << "\n; just return zero in case of emergency\n";
+        //        gen << "store i32 0, ptr " << var1.name << "\n";
+        //        auto var2 = gen.newName("", GenType::fromString("i32", true));
+        //        gen << var2.name << " = load i32, ptr " << var1.name << "\n";
+        //        gen << "ret i32 " << var2.name << "\n";
         //    gen << "}\n";
         //    return;
+        gen.println("; return 0 just in case");
+        gen.println("ret i32 0");
     }
 
     gen << "}\n";
@@ -326,7 +362,7 @@ GenVar codegen(Codegen &gen, const StatementVariant &e) {
 
 } // namespace
 
-void codegenIl(std::ostream &out, const Module &module) {
+void codegenIr(std::ostream &out, const Module &module) {
     vout << "\n\n----\ngenerating code" << std::endl;
 
     auto gen = Codegen{};

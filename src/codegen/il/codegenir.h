@@ -4,4 +4,4 @@
 #include <ostream>
 class Module;
 
-void codegenIl(std::ostream &out, const Module &module);
+void codegenIr(std::ostream &out, const Module &module);

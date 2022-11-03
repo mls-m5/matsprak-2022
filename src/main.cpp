@@ -1,7 +1,7 @@
 
 #include "ast/workspace.h"
 #include "codegen/cpp/codegencpp.h"
-#include "codegen/il/codegenil.h"
+#include "codegen/il/codegenir.h"
 #include "file.h"
 #include "log.h"
 #include "parse/parsemodule.h"
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     auto tmpPath = std::filesystem::path{"tmp.ll"};
     {
         auto file = std::ofstream{tmpPath};
-        codegenIl(file, *workspace->root);
+        codegenIr(file, *workspace->root);
         std::cout.flush();
     }
     std::system(("cat " + tmpPath.string()).c_str());
