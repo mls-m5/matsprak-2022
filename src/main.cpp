@@ -5,6 +5,7 @@
 #include "file.h"
 #include "log.h"
 #include "parse/parsemodule.h"
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -66,10 +67,10 @@ int main(int argc, char *argv[]) {
 
     std::cout << "executable complete" << std::endl;
 
-    std::cout << "executable returned "
-              << std::system(
-                     ("./" + tmpPath.replace_extension("").string()).c_str())
-              << std::endl;
+    int value =
+        std::system(("./" + tmpPath.replace_extension("").string()).c_str());
+
+    std::cout << "executable returned " << WEXITSTATUS(value) << std::endl;
 
     return 0;
 }

@@ -9,7 +9,7 @@ add_executable(
     src/tokenizer.cpp
     src/parse/parsemodule.cpp
     src/parse/state.cpp
-    src/codegen/il/codegenil.cpp
+    src/codegen/il/codegenir.cpp
     src/codegen/cpp/codegencpp.cpp
     )
 
