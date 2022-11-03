@@ -113,6 +113,8 @@ public:
 struct VariableDeclaration {
     Token name;
     DecoratedType type;
+    // Can be zero
+    std::shared_ptr<Expression> e;
 };
 
 struct ReturnStatement {

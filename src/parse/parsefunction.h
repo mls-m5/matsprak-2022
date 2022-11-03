@@ -185,8 +185,12 @@ void parseVariableDeclaration(Module &m, State &s) {
         if (!hasDefinedType) {
             var->type = expressionType(exp);
         }
-        body.commands.push_back({VariableDeclaration{name, var->type}});
-        body.commands.push_back({exp});
+        body.commands.push_back({
+            VariableDeclaration{.name = name,
+                                .type = expressionType(exp),
+                                .e = std::make_shared<Expression>(exp)},
+        });
+        //        body.commands.push_back({Assignment{exp}});
     }
 
     s.expectNext(Token::Semicolon);

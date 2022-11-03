@@ -65,3 +65,21 @@ public:
                        std::experimental::source_location::current())
         : runtime_error{createText(str, location)} {}
 };
+
+class GenError : public std::runtime_error {
+    std::string createText(const std::string &str,
+                           std::experimental::source_location location) {
+        auto ss = std::ostringstream{};
+
+        ss << "code generation error: ";
+        ss << "\nin file: " << location.file_name() << ":" << location.line()
+           << " in " << location.function_name() << "(...)";
+        return ss.str();
+    }
+
+public:
+    GenError(const std::string &str,
+             std::experimental::source_location location =
+                 std::experimental::source_location::current())
+        : runtime_error{createText(str, location)} {}
+};

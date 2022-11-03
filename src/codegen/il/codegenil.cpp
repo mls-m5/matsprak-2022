@@ -94,7 +94,7 @@ struct Codegen {
     GenVar newVar(std::string storeName, GenType type) {
         type.isPtr = true;
         auto var = newName(storeName, type);
-        out << var.name << " = alloca " << type.name << "\n";
+        println(var.name, "= alloca", type.name);
 
         return var;
     }
@@ -143,6 +143,13 @@ struct Codegen {
         return var2;
     }
 
+    void store(GenVar from, GenVar to) {
+        if (from.type.isPtr) {
+            throw GenError{"cannot store of ptr type"};
+        }
+        println("store", from.type.name, from.name, ", ptr", to.name);
+    }
+
     template <typename T>
     friend std::ostream &operator<<(Codegen &gen, const T &t) {
         gen.out << t;
@@ -151,6 +158,7 @@ struct Codegen {
 
     template <typename... Args>
     void println(Args... args) {
+        out << "  ";
         ((out << " " << args), ...) << "\n";
     }
 };
@@ -167,8 +175,7 @@ GenVar codegen(Codegen &gen, const NumericLiteral &s) {
     //    return "ptr " + gen.newString(s.string.str());
     auto type = GenType(s.type());
     auto var = gen.newVar("", s.type());
-    gen << "store " << type.name << " " << s.value << ", ptr " << var.name
-        << "\n";
+    gen.println("store ", type.name, s.value, ", ptr", var.name);
     return var;
 }
 
@@ -228,6 +235,13 @@ GenVar codegen(Codegen &gen, const VariableAccessor &d) {
 GenVar codegen(Codegen &gen, const VariableDeclaration &d) {
     auto name = gen.newVar(d.name.str(), d.type);
 
+    if (d.e) {
+        auto reference = codegen(gen, *d.e);
+        auto value = gen.load(reference);
+
+        gen.store(value, name);
+    }
+
     return name;
 }
 
@@ -241,7 +255,7 @@ GenVar codegen(Codegen &gen, const BinaryExpression &e) {
     auto res = gen.newName("", e.type());
 
     // TODO: Handle different types of operations
-    gen.println(res.name, "= add nsw", a.type, a.name, ",", b.name);
+    gen.println(res.name, "= add ", a.type, a.name, ",", b.name);
     return res;
 }
 
