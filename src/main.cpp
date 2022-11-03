@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <ostream>
 
 int main(int argc, char *argv[]) {
     auto workspace = std::make_unique<Workspace>();
@@ -49,7 +50,26 @@ int main(int argc, char *argv[]) {
         std::cout.flush();
     }
     std::system(("cat " + tmpPath.string()).c_str());
-    std::system(("llc-16 " + tmpPath.string()).c_str());
+    if (std::system(("llc-16 " + tmpPath.string()).c_str())) {
+        std::cerr << "failed to compile ir code\n";
+        return 1;
+    }
+
+    std::cout << "il compiled" << std::endl;
+
+    if (std::system(("clang++-16 " + tmpPath.replace_extension(".s").string() +
+                     " -o " + tmpPath.replace_extension("").string())
+                        .c_str())) {
+        std::cerr << "failed to compile assembly\n";
+        return 1;
+    }
+
+    std::cout << "executable complete" << std::endl;
+
+    std::cout << "executable returned "
+              << std::system(
+                     ("./" + tmpPath.replace_extension("").string()).c_str())
+              << std::endl;
 
     return 0;
 }
