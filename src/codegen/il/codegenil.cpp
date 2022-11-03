@@ -56,6 +56,10 @@ struct GenVar {
     GenType type;
 };
 
+GenVar voidVar() {
+    return {"", GenType::fromString("void", false)};
+}
+
 struct Codegen {
     std::stringstream header;
     std::stringstream out;
@@ -64,7 +68,7 @@ struct Codegen {
     const Function *currentFunction = nullptr;
 
     //    std::unordered_map<std::string, GenVar> variables;
-    std::vector<GenVar> variables;
+    std::vector<std::pair<std::string, GenVar>> variables;
 
     void resetVarNum(int value) {
         varNum = value;
@@ -80,7 +84,7 @@ struct Codegen {
         auto name = "%" + std::to_string(varNum);
         auto var = GenVar{name, type};
         if (!saveName.empty()) {
-            variables.push_back(var);
+            variables.push_back({saveName, var});
         }
         ++varNum;
         return var;
@@ -95,18 +99,33 @@ struct Codegen {
         return var;
     }
 
-    std::string newString(std::string value) {
+    GenVar findVariable(std::string name) {
+        for (auto &pair : variables) {
+            if (pair.first == name) {
+                return pair.second;
+            }
+        }
+        throw std::runtime_error{
+            "could not find variable when generating il: " + name};
+    }
+
+    GenVar newString(std::string value) {
         value.pop_back();
         value += "\\00\"";
         auto name = "@.str." + std::to_string(stringNum);
         header << name << " = private unnamed_addr constant ["
                << (value.size() - 2 - 2) << " x i8] c" << value << " align 1\n";
         ++stringNum;
-        return name;
+
+        auto var = newName("", GenType::fromString("i8", true));
+
+        println(var.name, "ptr", name);
+
+        return var;
     }
 
     GenVar lastVar() {
-        return variables.back();
+        return variables.back().second;
         //        return "%" + std::to_string(varNum - 1);
     }
 
@@ -136,23 +155,24 @@ struct Codegen {
     }
 };
 
-std::string codegen(Codegen &gen, const Expression &e);
-std::string codegen(Codegen &gen, const StatementVariant &e);
+GenVar codegen(Codegen &gen, const Expression &e);
+GenVar codegen(Codegen &gen, const StatementVariant &e);
 
-std::string codegen(Codegen &gen, const StringLiteral &s) {
-    return "ptr " + gen.newString(s.string.str());
+GenVar codegen(Codegen &gen, const StringLiteral &s) {
+
+    return gen.newString(s.string.str());
 }
 
-std::string codegen(Codegen &gen, const NumericLiteral &s) {
+GenVar codegen(Codegen &gen, const NumericLiteral &s) {
     //    return "ptr " + gen.newString(s.string.str());
     auto type = GenType(s.type());
     auto var = gen.newVar("", s.type());
     gen << "store " << type.name << " " << s.value << ", ptr " << var.name
         << "\n";
-    return var.name;
+    return var;
 }
 
-std::string codegen(Codegen &gen, const FunctionCall &f) {
+GenVar codegen(Codegen &gen, const FunctionCall &f) {
     auto ss = std::stringstream{};
     ss << "call " << convertType(f.function->signature.type) << " @"
        << f.function->signature.mangledName() << " (";
@@ -165,19 +185,19 @@ std::string codegen(Codegen &gen, const FunctionCall &f) {
         }
         isFirst = false;
         auto resName = codegen(gen, e);
-        ss << resName;
+        ss << resName.name;
     }
 
     ss << ")\n";
 
     if (f.function->signature.type.name.content() == "") {
         gen.println(ss.str());
-        return "";
+        return voidVar();
     }
 
     auto var = gen.newName("", f.function->signature.type);
     gen.println(var.name, " = ", ss.str());
-    return var.name;
+    return var;
 }
 
 void codegen(Codegen &gen, const FunctionSignature &f) {
@@ -200,30 +220,39 @@ void codegen(Codegen &gen, const FunctionSignature &f) {
     }
 }
 
-std::string codegen(Codegen &gen, const VariableAccessor &d) {
+GenVar codegen(Codegen &gen, const VariableAccessor &d) {
+    return gen.findVariable(d.name.str());
     throw NotImplemented{"implement this"};
-    return {};
 }
 
-std::string codegen(Codegen &gen, const VariableDeclaration &d) {
+GenVar codegen(Codegen &gen, const VariableDeclaration &d) {
     auto name = gen.newVar(d.name.str(), d.type);
 
-    return name.name;
+    return name;
 }
 
-std::string codegen(Codegen &gen, const BinaryExpression &e) {
-    throw NotImplemented{"implement this"};
-    return {};
+GenVar codegen(Codegen &gen, const BinaryExpression &e) {
+    auto left = codegen(gen, *e.left);
+    auto right = codegen(gen, *e.right);
+
+    auto a = gen.load(left);
+    auto b = gen.load(right);
+
+    auto res = gen.newName("", e.type());
+
+    // TODO: Handle different types of operations
+    gen.println(res.name, "= add nsw", a.type, a.name, ",", b.name);
+    return res;
 }
 
-std::string codegen(Codegen &gen, const ReturnStatement &e) {
-    auto var = gen.lastVar();
+GenVar codegen(Codegen &gen, const ReturnStatement &e) {
+    auto var = codegen(gen, e.e);
     auto loadedVar = gen.load(var);
     gen.println("ret", loadedVar.type, loadedVar.name);
 
     // https://stackoverflow.com/questions/36094685/instruction-expected-to-be-numbered
     gen.skipNumber();
-    return {};
+    return voidVar();
 }
 
 void codegen(Codegen &gen, const FunctionBody &body) {
@@ -273,11 +302,11 @@ void codegenImport(Codegen &gen, const Module &module) {
     }
 }
 
-std::string codegen(Codegen &gen, const Expression &e) {
+GenVar codegen(Codegen &gen, const Expression &e) {
     return std::visit([&gen](auto &e) { return codegen(gen, e); }, e);
 }
 
-std::string codegen(Codegen &gen, const StatementVariant &e) {
+GenVar codegen(Codegen &gen, const StatementVariant &e) {
     return std::visit([&gen](auto &e) { return codegen(gen, e); }, e);
 }
 

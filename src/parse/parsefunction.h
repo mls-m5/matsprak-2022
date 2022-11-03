@@ -106,6 +106,8 @@ Expression parseVariableAccessor(Module &m, State &s) {
         throw ParsingError{name, "could not find variable"};
     }
 
+    s.next();
+
     return VariableAccessor{name, s.findVariable(name)->type};
 }
 
@@ -122,6 +124,7 @@ Expression parseExpression(Module &m, State &s) {
             break;
         }
         exp = parseVariableAccessor(m, s);
+        break;
     case Token::BeginParen:
     case Token::StringLiteral: {
         auto sl = StringLiteral{s.token()};
