@@ -131,6 +131,17 @@ void codegen(Codegen &gen, const FunctionSignature &f) {
 }
 
 std::string codegen(Codegen &gen, const VariableDeclaration &d) {
+    throw "implement this";
+    return {};
+}
+
+std::string codegen(Codegen &gen, const BinaryExpression &e) {
+    throw "implement this";
+    return {};
+}
+
+std::string codegen(Codegen &gen, const ReturnStatement &e) {
+    throw "implement this";
     return {};
 }
 

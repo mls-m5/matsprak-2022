@@ -6,6 +6,7 @@
 #include "log.h"
 #include "state.h"
 #include "token.h"
+#include <memory>
 #include <optional>
 
 namespace {
@@ -97,37 +98,48 @@ Expression parseCallStatement(Module &m, State &s) {
 
 // Expression parseParentheses(Module &m, State &s) {}
 
-Expression parseBinary(Module &m, State &s) {}
-
 Expression parseExpression(Module &m, State &s) {
     auto &f = s.function();
     auto &body = f.body;
 
+    Expression exp;
+
     switch (s.token().type()) {
     case Token::Word:
         if (s.peek() == Token::BeginParen) {
-            return parseCallStatement(m, s);
+            exp = parseCallStatement(m, s);
+            break;
         }
-        else if (s.peek() == Token::Operator) {
-            throw "implement this";
-        }
-        break;
+        throw ParsingError(s.token(), "Unexpected symbol");
     case Token::BeginParen:
     case Token::StringLiteral: {
         auto sl = StringLiteral{s.token()};
         s.next();
-        return {sl};
+        exp = {sl};
+        break;
     }
     case Token::NumericLiteral: {
         auto nl = NumericLiteral{s.token()};
         s.next();
-        return {nl};
-    }
-
-    default:
+        exp = {nl};
         break;
     }
-    throw ParsingError(s.token(), "Unexpected symbol");
+    default:
+        throw ParsingError(s.token(), "Unexpected symbol");
+        break;
+    }
+
+    if (s.token() == Token::Operator) {
+        auto op = s.token();
+        s.next();
+        auto right = parseExpression(m, s);
+        return BinaryExpression{
+            .op = op,
+            .left = std::make_shared<Expression>(exp),
+            .right = std::make_shared<Expression>(right),
+        };
+    }
+    return exp;
 }
 
 void parseVariableDeclaration(Module &m, State &s) {

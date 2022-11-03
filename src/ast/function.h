@@ -53,6 +53,7 @@ struct FunctionSignature {
 
 // Expressions
 // ------------------------------------
+class Expression;
 
 struct FunctionCall {
     ~FunctionCall();
@@ -79,17 +80,22 @@ struct NumericLiteral {
     }
 };
 
-// struct BinaryExpresesion {
-//     Token operator;
-//     std::unique_ptr<Expression> left;
-//     std::unique_ptr<Expression> right;
+struct BinaryExpression {
+    Token op;
+    std::shared_ptr<Expression> left;
+    std::shared_ptr<Expression> right;
 
-//    DecoratedType type() const;
-//};
+    DecoratedType type() const;
+};
 
-#define EXPRESSION_LIST FunctionCall, StringLiteral, NumericLiteral
+#define EXPRESSION_LIST                                                        \
+    FunctionCall, StringLiteral, NumericLiteral, BinaryExpression
 
-using Expression = std::variant<EXPRESSION_LIST>;
+// Done like this to be able to forward declare it
+class Expression : public std::variant<EXPRESSION_LIST> {
+public:
+    using variant::variant;
+};
 
 // Statements
 // -------------------------------------------
@@ -171,4 +177,8 @@ inline FunctionCall::FunctionCall()
 
 inline DecoratedType FunctionCall::type() const {
     return function->signature.type;
+}
+
+inline DecoratedType BinaryExpression::type() const {
+    return expressionType(*left);
 }

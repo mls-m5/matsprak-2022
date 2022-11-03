@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <string_view>
 
 struct File {
     File() = default;
@@ -20,6 +21,25 @@ struct File {
 
     const std::filesystem::path &path() {
         return _path;
+    }
+
+    std::string_view lineAt(int targetLine) {
+        int line = 0;
+        int lineStart = 0;
+        int lineEnd = 0;
+        for (size_t i = 0; i < _content.size(); ++i) {
+            auto c = _content.at(i);
+            if (c == '\n') {
+                lineStart = lineEnd + 1;
+                lineEnd = i;
+                ++line;
+                if (line == targetLine) {
+                    return std::string_view(_content.data() + lineStart,
+                                            lineEnd - lineStart);
+                }
+            }
+        }
+        return {};
     }
 
 private:

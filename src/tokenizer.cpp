@@ -60,6 +60,7 @@ auto createNames() {
     names[Token::Word] = "Word";
     names[Token::StringLiteral] = "StringLiteral";
     names[Token::NumericLiteral] = "NumericLiteral";
+    names[Token::Operator] = "Operator";
 
     return names;
 }
@@ -81,13 +82,12 @@ Token::Type tokenType(std::string_view str) {
     if (std::isdigit(str.front())) {
         return Token::NumericLiteral;
     }
-    else if (std::find(
-                 operatorChars.begin(), operatorChars.end(), str.front())) {
-        return Token::Operator;
-    }
 
     if (auto f = keywords.find(std::string{str}); f != keywords.end()) {
         return f->second;
+    }
+    if (isOpChar(str.front())) {
+        return Token::Operator;
     }
 
     return Token::Word;

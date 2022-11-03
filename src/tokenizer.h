@@ -16,9 +16,9 @@ struct Tokenizer {
 
     // Make ready for another pass
     void reset() {
-        _row = 1;
         _col = 0;
         _n = 0;
+        _row = 1 + (ch() == '\n');
         next();
         next();
     }
