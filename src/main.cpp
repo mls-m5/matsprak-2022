@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    codegenCpp(std::cout, *workspace->root);
+    //    codegenCpp(std::cout, *workspace->root);
 
     auto tmpPath = std::filesystem::path{"tmp.ll"};
     {

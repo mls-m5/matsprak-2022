@@ -98,3 +98,5 @@ private:
     int _row = 1;
     int _col = 0;
 };
+
+std::string_view tokenName(Token::Type type);

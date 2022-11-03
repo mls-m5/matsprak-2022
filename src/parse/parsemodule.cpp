@@ -81,8 +81,8 @@ void parseRootDefinitions(Module &m, State &s) {
     auto &token = s.token();
     switch (token.type()) {
     case Token::Fn:
-        m.functions.push_back(std::make_unique<Function>(
-            Function{.signature = parseFunctionSignature(m, s)}));
+        m.functions.push_back(std::make_unique<Function>());
+        m.functions.back()->signature = parseFunctionSignature(m, s);
         skipGroup(s, Token::BeginBrace);
         break;
     default:

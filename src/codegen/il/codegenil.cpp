@@ -69,9 +69,18 @@ struct Codegen {
 };
 
 std::string codegen(Codegen &gen, const Expression &e);
+std::string codegen(Codegen &gen, const StatementVariant &e);
 
 std::string codegen(Codegen &gen, const StringLiteral &s) {
     return "ptr " + gen.newString(s.string.str());
+}
+
+std::string codegen(Codegen &gen, const NumericLiteral &s) {
+    //    return "ptr " + gen.newString(s.string.str());
+    auto type = convertType(s.type());
+    auto var = gen.newVar(type);
+    gen << "store " << type << ", ptr " << var;
+    return var;
 }
 
 std::string codegen(Codegen &gen, const FunctionCall &f) {
@@ -119,6 +128,10 @@ void codegen(Codegen &gen, const FunctionSignature &f) {
         }
         gen << ") ";
     }
+}
+
+std::string codegen(Codegen &gen, const VariableDeclaration &d) {
+    return {};
 }
 
 void codegen(Codegen &gen, const FunctionBody &body) {
@@ -169,6 +182,10 @@ void codegenImport(Codegen &gen, const Module &module) {
 }
 
 std::string codegen(Codegen &gen, const Expression &e) {
+    return std::visit([&gen](auto &e) { return codegen(gen, e); }, e);
+}
+
+std::string codegen(Codegen &gen, const StatementVariant &e) {
     return std::visit([&gen](auto &e) { return codegen(gen, e); }, e);
 }
 

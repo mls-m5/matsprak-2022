@@ -1,63 +1,11 @@
 #include "token.h"
 #include "errors.h"
+#include "tokenizer.h"
 #include <cctype>
 #include <string>
 #include <unordered_map>
 
-namespace {
-
-std::string toLower(std::string str) {
-    for (auto &c : str) {
-        c = std::tolower(c);
-    }
-    return str;
-};
-
-constexpr Token::Type firstOf(const char *ch) {
-    return Token::Type{ch[0]};
-}
-
-#define KEYWORD(x)                                                             \
-    { toLower(#x), Token::x }
-
-// Stuff like ( )
-#define SKEYWORD(x)                                                            \
-    { #x, firstOf(#x) }
-
-std::unordered_map<std::string, Token::Type> keywords = {
-    KEYWORD(Module),
-    KEYWORD(Fn),
-    KEYWORD(Import),
-    KEYWORD(Export),
-    KEYWORD(Let),
-    SKEYWORD(;),
-    SKEYWORD([),
-    SKEYWORD(]),
-    SKEYWORD({),
-    SKEYWORD(}),
-    SKEYWORD(:),
-    {"(", Token::BeginParen},
-    {")", Token::EndParen},
-    {",", Token::Comma},
-    {"->", Token::RightArrow},
-};
-
-auto createNames() {
-    auto names = std::unordered_map<Token::Type, std::string>{};
-
-    for (auto &pair : keywords) {
-        names[pair.second] = pair.first;
-    }
-
-    names[Token::Word] = "Word";
-    names[Token::StringLiteral] = "StringLiteral";
-
-    return names;
-}
-
-std::unordered_map<Token::Type, std::string> keywordNames = createNames();
-
-} // namespace
+namespace {} // namespace
 
 void Token::expect(Type t) const {
     if (t != _type) {
@@ -67,31 +15,4 @@ void Token::expect(Type t) const {
                                std::string{tokenName(type())} + "' (" +
                                std::to_string(type()) + ")"};
     }
-}
-
-std::string_view Token::typeName() const {
-    return tokenName(_type);
-}
-
-Token::Type tokenType(std::string_view str) {
-    if (str.empty()) {
-        return Token::Eof;
-    }
-    if (str.front() == '"') {
-        return Token::StringLiteral;
-    }
-
-    if (auto f = keywords.find(std::string{str}); f != keywords.end()) {
-        return f->second;
-    }
-
-    return Token::Word;
-}
-
-std::string_view tokenName(Token::Type type) {
-    if (auto f = keywordNames.find(type); f != keywordNames.end()) {
-        return f->second;
-    }
-
-    return {};
 }

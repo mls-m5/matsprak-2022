@@ -16,3 +16,18 @@ void apFunc2(Apa &apa) {
     apa.y = 30;
     apa.z = 3;
 }
+
+Apa create() {
+    return Apa{};
+}
+
+int useRet() {
+    auto apa = create();
+    return apa.x;
+}
+
+int use() {
+    auto apa = Apa{};
+    apa.x = 10;
+    return apa.x;
+}

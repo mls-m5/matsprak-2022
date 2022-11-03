@@ -10,14 +10,29 @@ struct Type {
     Token name;
 };
 
-struct ArgumentType : public Type {
+struct DecoratedType : public Type {
     bool isConst = true;
     bool isRef = false;
+
+    static DecoratedType stringType() {
+        // Handle this better in the future
+        return {{Token::fromString("string")}, true};
+    }
+
+    static DecoratedType numericType() {
+        // Handle this better in the future
+        return {Token::fromString("int")};
+    }
 };
 
 struct Argument {
     Token name;
-    ArgumentType type;
+    DecoratedType type;
+};
+
+struct Variable {
+    Token name;
+    DecoratedType type;
 };
 
 struct FunctionSignature {
@@ -25,7 +40,7 @@ struct FunctionSignature {
     std::vector<Argument> arguments;
     mutable std::string _mangledName = {};
     bool shouldExport = false;
-    Type type;
+    DecoratedType type;
 
     std::string mangledName() const {
         if (_mangledName.empty()) {
@@ -36,32 +51,114 @@ struct FunctionSignature {
     }
 };
 
+// Expressions
+// ------------------------------------
+
 struct FunctionCall {
     ~FunctionCall();
     FunctionCall();
     struct Function *function = nullptr;
     std::shared_ptr<struct FunctionCallArgs> args;
+
+    DecoratedType type() const;
 };
 
 struct StringLiteral {
     Token string;
+
+    DecoratedType type() const {
+        return DecoratedType::stringType();
+    }
 };
 
-using Expression = std::variant<FunctionCall, StringLiteral>;
+struct NumericLiteral {
+    Token value;
+
+    DecoratedType type() const {
+        return DecoratedType::numericType();
+    }
+};
+
+// struct BinaryExpresesion {
+//     Token operator;
+//     std::unique_ptr<Expression> left;
+//     std::unique_ptr<Expression> right;
+
+//    DecoratedType type() const;
+//};
+
+#define EXPRESSION_LIST FunctionCall, StringLiteral, NumericLiteral
+
+using Expression = std::variant<EXPRESSION_LIST>;
+
+// Statements
+// -------------------------------------------
+
+struct VariableDeclaration {
+    Token name;
+    DecoratedType type;
+};
+
+struct ReturnStatement {
+    Expression e;
+};
+
+#define STATEMENT_LIST VariableDeclaration, ReturnStatement
+
+inline const DecoratedType expressionType(const Expression &e) {
+    return std::visit([](auto &e) { return e.type(); }, e);
+}
 
 struct FunctionCallArgs {
     std::vector<Expression> args;
 };
 
+using StatementVariant = std::variant<EXPRESSION_LIST, STATEMENT_LIST>;
+
 struct Statement {
-    Expression e;
+    Statement(Expression s)
+        : e{std::visit(
+              [](auto &&s) -> StatementVariant {
+                  return StatementVariant{std::move(s)};
+              },
+              s)} {}
+    Statement(StatementVariant s)
+        : e{std::move(s)} {}
+
+    StatementVariant e;
 };
 
 struct FunctionBody {
+    std::vector<Variable> variables;
     std::vector<Statement> commands;
+
+    Variable *addVariable(Token name) {
+        if (findVariable(name)) {
+            return nullptr;
+        }
+
+        variables.push_back({name});
+        return &variables.back();
+    }
+
+    Variable *findVariable(Token name) {
+        for (auto &var : variables) {
+            if (var.name == name) {
+                return &var;
+            }
+        }
+
+        return nullptr;
+    }
 };
 
 struct Function {
+    Function() = default;
+    Function(const Function &) = delete;
+    Function(Function &&) = delete;
+    Function &operator=(const Function &) = delete;
+    Function &operator=(Function &&) = delete;
+
     FunctionSignature signature;
 
     FunctionBody body;
@@ -71,3 +168,7 @@ inline FunctionCall::~FunctionCall() = default;
 
 inline FunctionCall::FunctionCall()
     : args{std::make_shared<FunctionCallArgs>()} {}
+
+inline DecoratedType FunctionCall::type() const {
+    return function->signature.type;
+}

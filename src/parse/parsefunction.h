@@ -6,10 +6,11 @@
 #include "log.h"
 #include "state.h"
 #include "token.h"
+#include <optional>
 
 namespace {
 
-Expression parseExpression(Module &m, FunctionBody &body, State &s);
+Expression parseExpression(Module &m, State &s);
 
 Argument parseArgument(Module &m, State &s) {
     s.token().expect(Token::Word);
@@ -60,7 +61,7 @@ FunctionSignature parseFunctionSignature(Module &m, State &s) {
 
     if (s.token() == Token::RightArrow) {
         s.next();
-        f.type = parseType(m, s);
+        f.type = {parseType(m, s)};
     }
 
     vout << "function signature " << f.mangledName() << "()" << std::endl;
@@ -68,7 +69,7 @@ FunctionSignature parseFunctionSignature(Module &m, State &s) {
     return f;
 }
 
-FunctionCall parseCallStatement(Module &m, FunctionBody &body, State &s) {
+Expression parseCallStatement(Module &m, State &s) {
     auto fc = FunctionCall{};
 
     fc.function = s.findFunction(s.token());
@@ -79,7 +80,7 @@ FunctionCall parseCallStatement(Module &m, FunctionBody &body, State &s) {
     s.next().expect(Token::BeginParen);
     s.next();
     for (; s.token().type() != Token::EndParen;) {
-        fc.args->args.push_back(parseExpression(m, body, s));
+        fc.args->args.push_back(parseExpression(m, s));
         if (s.token().type() == Token::Comma) {
             s.next();
             continue;
@@ -94,19 +95,33 @@ FunctionCall parseCallStatement(Module &m, FunctionBody &body, State &s) {
     return fc;
 }
 
-Expression parseExpression(Module &m, FunctionBody &body, State &s) {
+// Expression parseParentheses(Module &m, State &s) {}
+
+Expression parseBinary(Module &m, State &s) {}
+
+Expression parseExpression(Module &m, State &s) {
+    auto &f = s.function();
+    auto &body = f.body;
+
     switch (s.token().type()) {
     case Token::Word:
         if (s.peek() == Token::BeginParen) {
-            return parseCallStatement(m, body, s);
+            return parseCallStatement(m, s);
+        }
+        else if (s.peek() == Token::Operator) {
+            throw "implement this";
         }
         break;
-    case Token::StringLiteral:
-
-    {
+    case Token::BeginParen:
+    case Token::StringLiteral: {
         auto sl = StringLiteral{s.token()};
         s.next();
-        return sl;
+        return {sl};
+    }
+    case Token::NumericLiteral: {
+        auto nl = NumericLiteral{s.token()};
+        s.next();
+        return {nl};
     }
 
     default:
@@ -115,27 +130,77 @@ Expression parseExpression(Module &m, FunctionBody &body, State &s) {
     throw ParsingError(s.token(), "Unexpected symbol");
 }
 
-bool parseBlockStatement(Module &m, Function &f, State &s) {
-    switch (s.token().type()) {
+void parseVariableDeclaration(Module &m, State &s) {
+    auto &body = s.function().body;
 
+    s.next().expect(Token::Word);
+
+    auto name = s.token();
+    s.next();
+
+    auto var = body.addVariable(name);
+
+    if (!var) {
+        throw ParsingError{
+            s.token(), "variable " + s.token().str() + " is already declared"};
+    }
+
+    bool hasDefinedType = false;
+
+    if (s.token() == Token::Colon) {
+        s.next();
+        var->type = {parseType(m, s)};
+    }
+
+    if (s.token() == Token::Equal) {
+        s.next();
+        auto exp = parseExpression(m, s);
+        auto var = body.findVariable(name); // Could have been changed
+        if (!hasDefinedType) {
+            var->type = expressionType(exp);
+        }
+        body.commands.push_back({VariableDeclaration{name, var->type}});
+        body.commands.push_back({exp});
+    }
+
+    s.expectNext(Token::Semicolon);
+}
+
+void parseReturnStatement(Module &m, State &s) {
+    s.next();
+
+    s.function().body.commands.push_back(
+        {ReturnStatement{parseExpression(m, s)}});
+
+    s.token().expect(Token::Semicolon);
+    s.next();
+}
+
+bool parseBlockStatement(Module &m, State &s) {
+    auto &f = s.function();
+
+    switch (s.token().type()) {
     case Token::EndBrace:
         s.next(); // End function
         return false;
     case Token::Let:
-        throw "continue here";
+        parseVariableDeclaration(m, s);
+        break;
+    case Token::Return:
+        parseReturnStatement(m, s);
         break;
     default:
-        f.body.commands.push_back({parseExpression(m, f.body, s)});
+        f.body.commands.push_back({parseExpression(m, s)});
     }
     return true;
 }
 
-void parseFunctionBody(Module &m, Function &f, State &s) {
+void parseFunctionBody(Module &m, State &s) {
     s.token().expect(Token::BeginBrace);
     s.next();
 
     for (; s;) {
-        if (!parseBlockStatement(m, f, s)) {
+        if (!parseBlockStatement(m, s)) {
             break;
         }
     }
@@ -145,6 +210,9 @@ void parseFunction(Module &m, State &s) {
     auto signature = parseFunctionSignature(m, s);
 
     auto f = m.functionExact(signature.mangledName(), false);
+
+    s.function(f);
+
     if (!f) {
         throw ParsingError{s.token(),
                            "internal error, could not find function " +
@@ -153,7 +221,9 @@ void parseFunction(Module &m, State &s) {
 
     vout << "parsing function " << f->signature.mangledName() << std::endl;
 
-    parseFunctionBody(m, *f, s);
+    parseFunctionBody(m, s);
+
+    s.function(nullptr);
 }
 
 } // namespace

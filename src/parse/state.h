@@ -2,10 +2,13 @@
 
 #include "ast/function.h"
 #include "ast/module.h"
+#include "errors.h"
 #include "file.h"
 #include "token.h"
 #include "tokenizer.h"
 #include <memory>
+#include <stdexcept>
+#include <vector>
 
 struct Decorations {
     bool shouldExport = false;
@@ -34,6 +37,13 @@ public:
         return _tokenizer.next();
     }
 
+    // Check type and move to next
+    const Token &expectNext(Token::Type type) {
+        token().expect(type);
+        next();
+        return token();
+    }
+
     operator bool() {
         return _tokenizer;
     }
@@ -59,8 +69,11 @@ public:
     };
 
     // Current function
-    Function *function() {
-        return _function;
+    Function &function() {
+        if (!_function) {
+            throw std::runtime_error{"no function set"};
+        }
+        return *_function;
     }
 
     void function(Function *f) {

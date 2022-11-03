@@ -3,4 +3,4 @@
 #include "ast/module.h"
 #include <ostream>
 
-void codegenCpp(std::ostream &out, const Module &module);
+// void codegenCpp(std::ostream &out, const Module &module);

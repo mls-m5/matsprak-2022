@@ -17,6 +17,7 @@ struct Token {
         Semicolon = ';',
         Comma = ',',
         Colon = ':',
+        Equal = '=',
 
         Eof = 0,
 
@@ -26,12 +27,14 @@ struct Token {
         Operator,
         StringLiteral,
         RightArrow,
+        NumericLiteral,
 
         Module,
         Fn,
         Import,
         Export,
         Let,
+        Return,
     };
 
     Token(std::shared_ptr<File> file,
@@ -63,8 +66,6 @@ struct Token {
     }
 
     void expect(Type t) const;
-
-    std::string_view typeName() const;
 
     const std::shared_ptr<File> &file() const {
         return _file;
@@ -109,6 +110,3 @@ private:
 
     Type _type = {};
 };
-
-Token::Type tokenType(std::string_view str);
-std::string_view tokenName(Token::Type type);
